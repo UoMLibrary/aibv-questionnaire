@@ -1,0 +1,760 @@
+// src/lib/questionnaire/questionnaire.ts
+
+export type Option = { id: string; label: string };
+
+export type QuestionBase = {
+    id: string;              // e.g. "6.2"
+    displayLabel?: string;   // e.g. "Q6.2"
+    prompt: string;
+    required?: boolean;
+    help?: string;
+};
+
+export type SingleChoiceQuestion = QuestionBase & {
+    type: 'single';
+    options: Option[];
+    allowOtherText?: boolean;
+};
+
+export type MultiChoiceQuestion = QuestionBase & {
+    type: 'multi';
+    options: Option[];
+    minSelect?: number;
+    allowOtherText?: boolean;
+};
+
+export type RatingQuestion = QuestionBase & {
+    type: 'rating';
+    min: number;
+    max: number;
+    minLabel?: string;
+    maxLabel?: string;
+};
+
+export type TextQuestion = QuestionBase & {
+    type: 'text';
+    multiline?: boolean;
+    placeholder?: string;
+};
+
+export type Question =
+    | SingleChoiceQuestion
+    | MultiChoiceQuestion
+    | RatingQuestion
+    | TextQuestion;
+
+export type Section = {
+    id: string;
+    title: string;
+    description?: string;
+    questions: Question[];
+};
+
+export type Questionnaire = {
+    id: string;
+    title: string;
+    intro: string;
+    estimatedMinutes?: string;
+    sections: Section[];
+};
+
+export const questionnaire: Questionnaire = {
+    id: 'dev-questionnaire-v1',
+    title: 'Developer Questionnaire',
+    intro: 'This questionnaire supports an apprenticeship project examining how service documentation, operational knowledge, and monitoring practices are currently managed across the Library development environment. The aim is to understand current practice and constraints, not to assess individual performance. Responses will be analysed in aggregate to identify patterns, risks, and opportunities for improvement.\n\nHow to submit: complete the questions and click Submit at the end. Responses are not anonymous (they are returned to me), but findings will be written up only as aggregated themes/patterns and not attributed to individuals. Progress is saved, so you can close the form and come back to it later if needed. If you’d rather add context outside the form, feel free to message me directly.',
+    estimatedMinutes: '12–18',
+    sections: [
+        /* --------------------------------------------------
+           Section 1 — Context
+        -------------------------------------------------- */
+        {
+            id: 'context',
+            title: 'Section 1 — Context',
+            questions: [
+                {
+                    id: '1.1',
+                    displayLabel: 'Q1.1',
+                    type: 'single',
+                    prompt: 'Your role',
+                    required: true,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'software_dev', label: 'Software Developer' },
+                        { id: 'senior_software_dev', label: 'Senior Software Developer' },
+                        { id: 'other', label: 'Other (please specify)' }
+                    ]
+                },
+                {
+                    id: '1.2',
+                    displayLabel: 'Q1.2',
+                    type: 'single',
+                    prompt: 'How long have you worked in the Library development environment?',
+                    required: true,
+                    options: [
+                        { id: 'lt_1', label: 'Less than 1 year' },
+                        { id: '1_3', label: '1–3 years' },
+                        { id: '3_5', label: '3–5 years' },
+                        { id: 'gt_5', label: 'More than 5 years' }
+                    ]
+                },
+                {
+                    id: '1.3',
+                    displayLabel: 'Q1.3',
+                    type: 'multi',
+                    prompt: 'Which technologies do you mainly work with?',
+                    help: 'Select all that apply',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'js_node', label: 'JavaScript / Node' },
+                        { id: 'python', label: 'Python' },
+                        { id: 'php', label: 'PHP' },
+                        { id: 'java', label: 'Java' },
+                        { id: 'dotnet', label: '.NET' },
+                        { id: 'sql', label: 'Databases / SQL' },
+                        { id: 'devops', label: 'Infrastructure / DevOps' },
+                        { id: 'other', label: 'Other (please specify)' }
+                    ]
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 2 — What do you document, and why?
+        -------------------------------------------------- */
+        {
+            id: 'what_document',
+            title: 'Section 2 — What do you document, and why?',
+            questions: [
+                {
+                    id: '2.1',
+                    displayLabel: 'Q2.1',
+                    type: 'multi',
+                    prompt: 'What do you usually write documentation for?',
+                    help: 'Select all that apply',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'onboarding', label: 'Onboarding new developers' },
+                        { id: 'incidents', label: 'Supporting incidents or outages' },
+                        { id: 'handover', label: 'Handover / cover when someone is unavailable' },
+                        { id: 'architecture', label: 'Explaining system architecture or design' },
+                        { id: 'personal_ref', label: 'Personal reference' },
+                        { id: 'compliance', label: 'Compliance or audit' },
+                        { id: 'rarely', label: 'I rarely write documentation' },
+                        { id: 'not_applicable', label: 'Not applicable / I don’t write documentation' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '2.2',
+                    displayLabel: 'Q2.2',
+                    type: 'multi',
+                    prompt: 'Who do you primarily expect to read the documentation you write?',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'myself', label: 'Myself' },
+                        { id: 'devs', label: 'Other developers' },
+                        { id: 'support', label: 'Support teams' },
+                        { id: 'managers', label: 'Managers' },
+                        { id: 'not_sure', label: 'I’m not sure' },
+                        { id: 'not_applicable', label: 'Not applicable / I don’t write documentation' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '2.3',
+                    displayLabel: 'Q2.3',
+                    type: 'rating',
+                    prompt:
+                        'How clear do you feel the overall purpose of documentation is within the team?',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: 'Very unclear',
+                    maxLabel: 'Very clear'
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 3 — Documentation timing and triggers
+        -------------------------------------------------- */
+        {
+            id: 'timing',
+            title: 'Section 3 — Documentation timing and triggers',
+            questions: [
+                {
+                    id: '3.1',
+                    displayLabel: 'Q3.1',
+                    type: 'multi',
+                    prompt:
+                        'When do you usually create or update documentation for a service?',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'before', label: 'Before development begins (e.g. planning or design)' },
+                        { id: 'during', label: 'During development' },
+                        { id: 'after', label: 'After development / once deployed' },
+                        { id: 'only_when_wrong', label: 'Only when something goes wrong' },
+                        { id: 'rarely', label: 'Rarely or never' },
+                        { id: 'depends', label: 'It depends on the service' },
+                        { id: 'not_applicable', label: 'Not applicable / I don’t write documentation' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '3.2',
+                    displayLabel: 'Q3.2',
+                    type: 'multi',
+                    prompt:
+                        'What typically triggers you to write or update documentation?',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'new_service', label: 'Starting a new service' },
+                        { id: 'significant_change', label: 'A significant change or refactor' },
+                        { id: 'incident', label: 'An incident or outage' },
+                        { id: 'asked', label: 'Someone asking for information' },
+                        { id: 'onboarding', label: 'Onboarding a new team member' },
+                        { id: 'time', label: 'Time becoming available' },
+                        { id: 'no_trigger', label: 'No clear trigger' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 4 — Where documentation lives
+        -------------------------------------------------- */
+        {
+            id: 'where_docs_live',
+            title: 'Section 4 — Where documentation lives',
+            questions: [
+                {
+                    id: '4.1',
+                    displayLabel: 'Q4.1',
+                    type: 'multi',
+                    prompt:
+                        'Where do you usually document the services you work on?',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'repos', label: 'Code repositories (README files, docs folders, etc.)' },
+                        { id: 'lapcat', label: 'Lapcat' },
+                        { id: 'wiki', label: 'Internal wiki / intranet' },
+                        { id: 'tickets', label: 'Tickets or issue trackers' },
+                        { id: 'personal_notes', label: 'Personal notes' },
+                        { id: 'not_documented', label: 'Not documented' },
+                        { id: 'not_applicable', label: 'Not applicable / I don’t manage documentation' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '4.2',
+                    displayLabel: 'Q4.2',
+                    type: 'rating',
+                    prompt:
+                        'How confident are you that documentation for your services is up to date?',
+                    required: true,
+                    min: 1,
+                    max: 5
+                },
+                {
+                    id: '4.3',
+                    displayLabel: 'Q4.3',
+                    type: 'rating',
+                    prompt:
+                        'How confident are you that documentation for your services is easy for others to find?',
+                    required: true,
+                    min: 1,
+                    max: 5
+                },
+                {
+                    id: '4.4',
+                    displayLabel: 'Q4.4',
+                    type: 'rating',
+                    prompt:
+                        'How usable is existing documentation during an incident or urgent issue?',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: 'Not usable',
+                    maxLabel: 'Very usable'
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 5 — Lapcat awareness and usage
+        -------------------------------------------------- */
+        {
+            id: 'lapcat',
+            title: 'Section 5 — Lapcat awareness and usage',
+            questions: [
+                {
+                    id: '5.1',
+                    displayLabel: 'Q5.1',
+                    type: 'single',
+                    prompt:
+                        'Before this questionnaire, were you aware of Lapcat?',
+                    required: true,
+                    options: [
+                        { id: 'yes', label: 'Yes' },
+                        { id: 'no', label: 'No' }
+                    ]
+                },
+                {
+                    id: '5.2',
+                    displayLabel: 'Q5.2',
+                    type: 'single',
+                    prompt: 'Have you ever updated Lapcat yourself?',
+                    required: true,
+                    options: [
+                        { id: 'yes', label: 'Yes' },
+                        { id: 'no', label: 'No' },
+                        { id: 'not_sure', label: 'Not sure' }
+                    ]
+                },
+                {
+                    id: '5.3',
+                    displayLabel: 'Q5.3',
+                    type: 'multi',
+                    prompt:
+                        'What do you believe Lapcat is mainly used for?',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'services_exist', label: 'Recording what services exist' },
+                        { id: 'ownership', label: 'Identifying service ownership' },
+                        { id: 'dependencies', label: 'Tracking dependencies' },
+                        { id: 'incident_support', label: 'Incident support' },
+                        { id: 'compliance', label: 'Compliance or audit' },
+                        { id: 'not_sure', label: 'I’m not sure' },
+                        { id: 'not_used', label: 'I have not used Lapcat' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '5.4',
+                    displayLabel: 'Q5.4',
+                    type: 'rating',
+                    prompt:
+                        'How accurate do you believe Lapcat currently is?',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: 'Not accurate',
+                    maxLabel: 'Very accurate'
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 6 — Tests as supporting artefacts		   
+        -------------------------------------------------- */
+        {
+            id: 'tests',
+            title: 'Section 6 — Tests as supporting artefacts',
+            questions: [
+                {
+                    id: '6.1',
+                    displayLabel: 'Q6.1',
+                    type: 'single',
+                    prompt:
+                        'Across the apps/services you work on, approximately what proportion have automated tests?',
+                    required: true,
+                    options: [
+                        { id: '0', label: '0%' },
+                        { id: '1_25', label: '1–25%' },
+                        { id: '26_50', label: '26–50%' },
+                        { id: '51_75', label: '51–75%' },
+                        { id: '76_100', label: '76–100%' },
+                        { id: 'not_sure', label: 'Not sure' }
+                    ]
+                },
+                {
+                    id: '6.2',
+                    displayLabel: 'Q6.2',
+                    type: 'multi',
+                    prompt:
+                        'What types of automated tests are used in any of those apps/services?',
+                    help: 'Select all that apply',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'unit', label: 'Unit tests' },
+                        { id: 'integration', label: 'Integration tests' },
+                        { id: 'e2e', label: 'End-to-end tests' },
+                        { id: 'not_sure', label: 'Not sure' },
+                        { id: 'other', label: 'Other (please specify)' }
+                    ]
+                },
+                {
+                    id: '6.3',
+                    displayLabel: 'Q6.3',
+                    type: 'multi',
+                    prompt:
+                        'What do you mainly rely on tests for (where they exist)?',
+                    help: 'Select all that apply',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        {
+                            id: 'no_break',
+                            label: 'Checking changes don’t break existing behaviour'
+                        },
+                        {
+                            id: 'understand',
+                            label: 'Understanding how the system is meant to work'
+                        },
+                        {
+                            id: 'refactor',
+                            label: 'Supporting refactoring'
+                        },
+                        {
+                            id: 'safe_changes',
+                            label: 'Enabling other developers to make changes safely'
+                        },
+                        {
+                            id: 'deploy_conf',
+                            label: 'Providing confidence during deployment'
+                        },
+                        {
+                            id: 'dont_rely',
+                            label: 'I don’t rely on tests'
+                        },
+                        {
+                            id: 'other',
+                            label: 'Other (free text)'
+                        }
+                    ]
+                },
+                {
+                    id: '6.4',
+                    displayLabel: 'Q6.4',
+                    type: 'rating',
+                    prompt:
+                        'To what extent do tests act as documentation for the apps/services you work on?',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: 'Not at all',
+                    maxLabel: 'Primary source of truth'
+                },
+                {
+                    id: '6.5',
+                    displayLabel: 'Q6.5',
+                    type: 'single',
+                    prompt:
+                        'If a test fails, how visible is that failure to others?',
+                    required: true,
+                    options: [
+                        {
+                            id: 'high',
+                            label: 'Highly visible (e.g. CI alerts, dashboards)'
+                        },
+                        {
+                            id: 'devs_only',
+                            label: 'Visible to developers only'
+                        },
+                        {
+                            id: 'not_visible',
+                            label: 'Not very visible'
+                        },
+                        {
+                            id: 'na',
+                            label: 'Not applicable / no tests'
+                        }
+                    ]
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 7 — Monitoring and issue awareness
+        -------------------------------------------------- */
+        {
+            id: 'monitoring',
+            title: 'Section 7 — Monitoring and issue awareness',
+            questions: [
+                {
+                    id: '7.1',
+                    displayLabel: 'Q7.1',
+                    type: 'multi',
+                    prompt:
+                        'How do you usually become aware of issues (e.g. errors, crashes, performance problems) in the services you work on?',
+                    help: 'Select all that apply',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'told', label: 'A user or colleague tells me' },
+                        { id: 'ticket', label: 'A ticket is raised (e.g. support desk, email)' },
+                        { id: 'dev_test', label: 'I notice it during development or testing' },
+                        { id: 'alerts', label: 'Automated alerts (e.g. monitoring tools, log alerts)' },
+                        { id: 'dashboards', label: 'Dashboards or status pages' },
+                        { id: 'check_logs', label: 'I proactively check logs or metrics' },
+                        { id: 'not_aware', label: 'I’m not usually aware unless someone contacts me' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '7.2',
+                    displayLabel: 'Q7.2',
+                    type: 'single',
+                    prompt:
+                        'Who is primarily responsible for monitoring the services you work on?',
+                    required: true,
+                    options: [
+                        { id: 'me_team', label: 'Me / the development team' },
+                        { id: 'other_internal', label: 'Another internal team' },
+                        { id: 'central_it', label: 'Central IT / organisational monitoring' },
+                        { id: 'shared', label: 'Shared responsibility' },
+                        { id: 'not_defined', label: 'Not clearly defined' },
+                        { id: 'not_sure', label: 'Not sure' }
+                    ]
+                },
+                {
+                    id: '7.3',
+                    displayLabel: 'Q7.3',
+                    type: 'rating',
+                    prompt:
+                        'How confident are you that issues with your services would be detected quickly if no one reported them?',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: 'Not confident',
+                    maxLabel: 'Very confident'
+                },
+                {
+                    id: '7.4',
+                    displayLabel: 'Q7.4',
+                    type: 'single',
+                    prompt:
+                        'If an issue occurred outside working hours, how likely is it that someone would notice promptly?',
+                    required: true,
+                    options: [
+                        { id: 'very_likely', label: 'Very likely' },
+                        { id: 'somewhat', label: 'Somewhat likely' },
+                        { id: 'unlikely', label: 'Unlikely' },
+                        { id: 'not_sure', label: 'Not sure' },
+                        { id: 'na', label: 'Not applicable' }
+                    ]
+                },
+                {
+                    id: '7.5',
+                    displayLabel: 'Q7.5',
+                    type: 'single',
+                    prompt:
+                        'After an incident, are documentation or monitoring usually updated?',
+                    required: true,
+                    options: [
+                        { id: 'yes', label: 'Yes, consistently' },
+                        { id: 'sometimes', label: 'Sometimes' },
+                        { id: 'rarely', label: 'Rarely' },
+                        { id: 'no', label: 'No' },
+                        { id: 'na', label: 'Not applicable / unsure' }
+                    ]
+                },
+                {
+                    id: '7.6',
+                    displayLabel: 'Q7.6',
+                    type: 'single',
+                    prompt:
+                        'Are there services where only one person would realistically know how to diagnose a problem?',
+                    required: true,
+                    options: [
+                        { id: 'yes', label: 'Yes' },
+                        { id: 'no', label: 'No' },
+                        { id: 'not_sure', label: 'Not sure' }
+                    ]
+                },
+                {
+                    id: '7.7',
+                    displayLabel: 'Q7.7',
+                    type: 'single',
+                    prompt:
+                        'Do you assume that monitoring for your services exists outside your team?',
+                    required: true,
+                    options: [
+                        { id: 'yes', label: 'Yes' },
+                        { id: 'no', label: 'No' },
+                        { id: 'not_sure', label: 'Not sure' }
+                    ]
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 8 — Resilience (handover and coverage)
+        -------------------------------------------------- */
+        {
+            id: 'resilience',
+            title: 'Section 8 — Resilience (handover and coverage)',
+            questions: [
+                {
+                    id: '8.1',
+                    displayLabel: 'Q8.1',
+                    type: 'rating',
+                    prompt:
+                        'If you were unexpectedly unavailable, how confident are you that someone else could understand what the service does?',
+                    required: true,
+                    min: 1,
+                    max: 5
+                },
+                {
+                    id: '8.2',
+                    displayLabel: 'Q8.2',
+                    type: 'rating',
+                    prompt:
+                        'If you were unexpectedly unavailable, how confident are you that someone else could diagnose an issue if it failed?',
+                    required: true,
+                    min: 1,
+                    max: 5
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+           Section 9 — Constraints and reflection
+        -------------------------------------------------- */
+        {
+            id: 'constraints_reflection',
+            title: 'Section 9 — Constraints and reflection',
+            questions: [
+                {
+                    id: '9.1',
+                    displayLabel: 'Q9.1',
+                    type: 'text',
+                    prompt: 'Based on your experience or observations, what usually makes documentation hard to keep up to date?',
+                    required: true,
+                    multiline: true
+                },
+                {
+                    id: '9.2',
+                    displayLabel: 'Q9.2',
+                    type: 'text',
+                    prompt: 'From your perspective, what is the biggest risk if service documentation or information is missing or outdated?',
+                    required: true,
+                    multiline: true
+                },
+                {
+                    id: '9.3',
+                    displayLabel: 'Q9.3',
+                    type: 'text',
+                    prompt: 'If one thing could be improved about how service information is recorded or shared, what should it be?',
+                    required: true,
+                    multiline: true
+                }
+            ]
+        },
+
+        /* --------------------------------------------------
+            Section 10 — End-user visibility and feedback
+        -------------------------------------------------- */
+        {
+            id: 'end_user_visibility',
+            title: 'Section 10 — End-user visibility and feedback',
+            description:
+                'These questions look at user-facing visibility: how end users discover services and how problems are surfaced back to developers.',
+            questions: [
+                {
+                    id: '10.1',
+                    displayLabel: 'Q10.1',
+                    type: 'multi',
+                    prompt:
+                        'Across the apps/services you work on, how do end users typically discover or access them?',
+                    help: 'Select all that apply',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'library_website', label: 'Library website links/pages' },
+                        { id: 'portal', label: 'University portal / MyManchester / intranet links' },
+                        { id: 'direct_url', label: 'Direct URL / bookmark' },
+                        { id: 'vendor_platform', label: 'Vendor / third-party platform' },
+                        { id: 'embedded_in_other', label: 'Embedded in another system (integration)' },
+                        { id: 'email_comms', label: 'Shared via email/comms (links in messages)' },
+                        { id: 'not_sure', label: 'Not sure' },
+                        { id: 'varies', label: 'Varies a lot by service' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '10.2',
+                    displayLabel: 'Q10.2',
+                    type: 'multi',
+                    prompt:
+                        'How do end users typically report issues or request help for the apps/services you work on?',
+                    help: 'Select all that apply',
+                    required: true,
+                    minSelect: 1,
+                    allowOtherText: true,
+                    options: [
+                        { id: 'support_ticket', label: 'Support desk / ticket system' },
+                        { id: 'email', label: 'Email to a shared mailbox/team' },
+                        { id: 'phone_in_person', label: 'Phone / in-person support' },
+                        { id: 'in_app_feedback', label: 'In-app feedback form / bug report' },
+                        { id: 'vendor_support', label: 'Directly to vendor / third party' },
+                        { id: 'informal', label: 'Informal (e.g. Teams message / ask someone they know)' },
+                        { id: 'no_clear_route', label: 'No clear route / ad-hoc' },
+                        { id: 'not_sure', label: 'Not sure' },
+                        { id: 'varies', label: 'Varies a lot by service' },
+                        { id: 'other', label: 'Other (free text)' }
+                    ]
+                },
+                {
+                    id: '10.3',
+                    displayLabel: 'Q10.3',
+                    type: 'rating',
+                    prompt:
+                        'How clear is the user-facing route for reporting issues for the apps/services you work on?',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: 'Very unclear',
+                    maxLabel: 'Very clear'
+                },
+                {
+                    id: '10.4',
+                    displayLabel: 'Q10.4',
+                    type: 'single',
+                    prompt:
+                        'Is there any user-facing service status / maintenance information for the apps/services you work on (e.g. status page, banner, outage comms)?',
+                    required: true,
+                    options: [
+                        { id: 'yes_consistent', label: 'Yes, consistently' },
+                        { id: 'sometimes', label: 'Sometimes / depends on the service' },
+                        { id: 'no', label: 'No' },
+                        { id: 'not_sure', label: 'Not sure' }
+                    ]
+                },
+                {
+                    id: '10.5',
+                    displayLabel: 'Q10.5',
+                    type: 'rating',
+                    prompt:
+                        'How confident are you that end users would know what to do if a service they use was failing or degraded?',
+                    required: true,
+                    min: 1,
+                    max: 5,
+                    minLabel: 'Not confident',
+                    maxLabel: 'Very confident'
+                }
+            ]
+        },
+
+    ]
+};
