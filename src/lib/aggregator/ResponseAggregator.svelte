@@ -98,28 +98,60 @@
 	}
 </script>
 
-<section class="space-y-6">
-	<h2 class="text-xl font-semibold">Questionnaire analysis</h2>
+<section class="bg-slate-50 min-h-screen py-10">
+	<div class="mx-auto max-w-5xl px-6 space-y-8">
 
-	<input
-		type="file"
-		multiple
-		webkitdirectory
-		accept=".json"
-		on:change={onFilesSelected}
-	/>
+		<!-- Header -->
+		<header class="space-y-2">
+			<h2 class="text-2xl font-semibold tracking-tight text-slate-900">
+				Questionnaire analysis
+			</h2>
+			<p class="text-sm text-slate-600 max-w-2xl">
+				Aggregated results from submitted questionnaire response files.
+				Data is analysed per question and shown in summary form.
+			</p>
+		</header>
 
-	<p class="text-sm text-slate-600">
-		Select the folder containing the response JSON files.
-	</p>
+		<!-- File input panel -->
+		<div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+			<div class="flex flex-col gap-2">
+				<label class="text-sm font-medium text-slate-700">
+					Response files
+				</label>
 
-	{#if submissions.length > 0}
-		<p class="text-sm">
-			Loaded <strong>{submissions.length}</strong> responses
-		</p>
-	{/if}
+				<input
+					type="file"
+					multiple
+					webkitdirectory
+					accept=".json"
+					on:change={onFilesSelected}
+					class="block w-full text-sm text-slate-700
+						file:mr-4 file:rounded-lg file:border-0
+						file:bg-slate-900 file:px-4 file:py-2
+						file:text-sm file:font-medium file:text-white
+						hover:file:bg-slate-800"
+				/>
 
-	{#each Object.entries(aggregated) as [qid, data]}
-		<QuestionResult {qid} {data} />
-	{/each}
+				<p class="text-xs text-slate-500">
+					Select the folder containing downloaded questionnaire response JSON files.
+				</p>
+			</div>
+
+			{#if submissions.length > 0}
+				<div class="text-sm text-slate-700">
+					Loaded <strong>{submissions.length}</strong> responses
+				</div>
+			{/if}
+		</div>
+
+		<!-- Results -->
+		{#if Object.keys(aggregated).length > 0}
+			<div class="space-y-6">
+				{#each Object.entries(aggregated) as [qid, data]}
+					<QuestionResult {qid} {data} />
+				{/each}
+			</div>
+		{/if}
+
+	</div>
 </section>
