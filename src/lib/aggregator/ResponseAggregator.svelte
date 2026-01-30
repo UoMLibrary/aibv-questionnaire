@@ -2,6 +2,10 @@
 	import { questionnaire, type Question } from '$lib/questionnaire/questionnaire';
 	import QuestionResult from './QuestionResult.svelte';
 
+    let totalFiles = 0;
+    let jsonFiles = 0;
+    let validResponses = 0;
+
 	type StoredAnswer = {
 		value: string | string[] | number;
 		otherText?: string;
@@ -25,25 +29,74 @@
 		}
 	}
 
-	async function onFilesSelected(e: Event) {
-		const input = e.currentTarget as HTMLInputElement;
-		if (!input.files) return;
+    async function onFilesSelected(e: Event) {
+        const input = e.currentTarget as HTMLInputElement;
+        if (!input.files || input.files.length === 0) return;
 
-		submissions = [];
-		aggregated = {};
+        submissions = [];
+        aggregated = {};
+        totalFiles = input.files.length;
+        jsonFiles = 0;
+        validResponses = 0;
 
-		for (const file of Array.from(input.files)) {
-			if (!file.name.endsWith('.json')) continue;
-			try {
-				const data = JSON.parse(await file.text());
-				submissions.push(data);
-			} catch {
-				console.warn('Skipping invalid file:', file.name);
-			}
-		}
+        // Check if this looks like a folder selection
+        const fromFolder = Array.from(input.files).some(
+            f => f.webkitRelativePath && f.webkitRelativePath.includes('/')
+        );
 
-		aggregate();
-	}
+        if (!fromFolder) {
+            alert('Please select a folder containing the response files.');
+            return;
+        }
+
+        for (const file of Array.from(input.files)) {
+            if (!file.name.toLowerCase().endsWith('.json')) continue;
+
+            jsonFiles++;
+
+            try {
+                const data = JSON.parse(await file.text());
+                submissions.push(data);
+                validResponses++;
+            } catch {
+                console.warn('Skipping invalid JSON:', file.name);
+            }
+        }
+
+        if (validResponses === 0) {
+            alert('No valid questionnaire JSON files were found in this folder.');
+            return;
+        }
+
+        aggregate();
+    }
+
+
+
+    const STOP_WORDS = new Set([
+        'the', 'and', 'to', 'of', 'a', 'in', 'for', 'is', 'on', 'that',
+        'with', 'as', 'are', 'it', 'be', 'or', 'by', 'this', 'an',
+        'at', 'from', 'if', 'but', 'we', 'they', 'their', 'our'
+    ]);
+
+    function extractKeywords(texts: string[]) {
+        const freq: Record<string, number> = {};
+
+        for (const text of texts) {
+            const words = text
+                .toLowerCase()
+                .replace(/[^a-z0-9\s]/g, '')
+                .split(/\s+/)
+                .filter(w => w.length > 2 && !STOP_WORDS.has(w));
+
+            for (const w of words) {
+                freq[w] = (freq[w] || 0) + 1;
+            }
+        }
+
+        return freq;
+    }
+
 
 	function aggregate() {
 		const result: Record<string, any> = {};
@@ -54,13 +107,14 @@
 				if (!q) continue;
 
 				if (!result[qid]) {
-					result[qid] = {
-						question: q,
-						count: 0,
-						values: {},
-						sum: 0,
-						freeText: []
-					};
+                    result[qid] = {
+                        question: q,
+                        count: 0,
+                        values: {},
+                        sum: 0,
+                        freeText: [],
+                        keywords: {}
+                    };
 				}
 
 				const entry = result[qid];
@@ -93,6 +147,12 @@
 
 			}
 		}
+
+        for (const entry of Object.values(result)) {
+            if (entry.freeText.length > 0) {
+                entry.keywords = extractKeywords(entry.freeText);
+            }
+        }
 
 		aggregated = result;
 	}
@@ -133,15 +193,21 @@
 				/>
 
 				<p class="text-xs text-slate-500">
-					Select the folder containing downloaded questionnaire response JSON files.
+					Select the folder containing downloaded questionnaire response JSON files. Other files (for example system or hidden files) will be ignored automatically.
 				</p>
 			</div>
 
-			{#if submissions.length > 0}
-				<div class="text-sm text-slate-700">
-					Loaded <strong>{submissions.length}</strong> responses
-				</div>
-			{/if}
+            {#if validResponses > 0}
+                <div class="text-sm text-slate-700 space-y-1">
+                    <div>
+                        <strong>{validResponses}</strong> valid response file{validResponses === 1 ? '' : 's'} processed
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        ({jsonFiles} JSON file{jsonFiles === 1 ? '' : 's'} found in {totalFiles} total file{totalFiles === 1 ? '' : 's'})
+                    </div>
+                </div>
+            {/if}
+
 		</div>
 
 		<!-- Results -->
