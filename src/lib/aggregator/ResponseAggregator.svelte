@@ -81,9 +81,16 @@
 					}
 				}
 
-				if (answer.otherText) {
-					entry.freeText.push(answer.otherText);
-				}
+                if (q.type === 'text') {
+                    if (typeof answer.value === 'string' && answer.value.trim()) {
+                        entry.freeText.push(answer.value.trim());
+                    }
+                }
+
+                if (answer.otherText?.trim()) {
+                    entry.freeText.push(answer.otherText.trim());
+                }
+
 			}
 		}
 
