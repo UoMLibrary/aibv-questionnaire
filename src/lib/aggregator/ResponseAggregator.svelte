@@ -156,6 +156,88 @@
 
 		aggregated = result;
 	}
+
+	function generateFullMarkdown() {
+	let md = `# Questionnaire Analysis Report\n\n`;
+	md += `Generated: ${new Date().toISOString()}\n\n`;
+	md += `Valid responses processed: ${validResponses}\n\n`;
+	md += `---\n\n`;
+
+	for (const [qid, data] of Object.entries(aggregated)) {
+		const q = data.question;
+
+		md += `## ${qid}. ${q.prompt}\n\n`;
+		md += `Responses: ${data.count}\n\n`;
+
+		// Rating
+		if (q.type === 'rating' && data.count > 0) {
+			const avg = (data.sum / data.count).toFixed(2);
+			md += `**Average rating:** ${avg} / ${q.max}\n\n`;
+		}
+
+		// Single / Multi
+		if ((q.type === 'single' || q.type === 'multi') && data.values) {
+			md += `**Response distribution:**\n\n`;
+
+			const optionLabelMap =
+				q.options
+					? Object.fromEntries(q.options.map(o => [o.id, o.label]))
+					: {};
+
+			for (const [optionId, count] of Object.entries(data.values)) {
+				const label = optionLabelMap[optionId] ?? optionId;
+				md += `- ${label}: ${count}\n`;
+			}
+
+			md += `\n`;
+		}
+
+		// Text themes
+		if (data.keywords && Object.keys(data.keywords).length > 0) {
+			const topThemes = Object.entries(data.keywords)
+				.sort((a, b) => b[1] - a[1])
+				.slice(0, 5);
+
+			md += `**Top themes:**\n\n`;
+			for (const [word, count] of topThemes) {
+				md += `- ${word} (${count})\n`;
+			}
+			md += `\n`;
+		}
+
+		// Representative text answers (limit to avoid huge output)
+		if (data.freeText?.length) {
+			md += `**Representative responses:**\n\n`;
+			for (const txt of data.freeText.slice(0, 5)) {
+				md += `- "${txt}"\n`;
+			}
+			md += `\n`;
+		}
+
+		md += `---\n\n`;
+	}
+
+	return md;
+}
+
+async function exportAllMarkdown() {
+	const markdown = generateFullMarkdown();
+
+	// Option 1: Copy to clipboard
+	await navigator.clipboard.writeText(markdown);
+
+	// Option 2 (recommended): Download file
+	const blob = new Blob([markdown], { type: 'text/markdown' });
+	const url = URL.createObjectURL(blob);
+
+	const a = document.createElement('a');
+	a.href = url;
+	a.download = `questionnaire-analysis-${new Date().toISOString()}.md`;
+	a.click();
+
+	URL.revokeObjectURL(url);
+}
+
 </script>
 
 <section class="bg-slate-50 min-h-screen py-10">
@@ -171,6 +253,18 @@
 				Data is analysed per question and shown in summary form.
 			</p>
 		</header>
+
+		<div class="flex justify-end">
+
+	    <button
+			type="button"
+			on:click={exportAllMarkdown}
+			class="text-sm rounded-md border px-3 py-1.5 text-slate-700 hover:bg-slate-100"
+		>
+			Export full Markdown report
+		</button>
+	</div>
+
 
 		<!-- File input panel -->
 		<div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
