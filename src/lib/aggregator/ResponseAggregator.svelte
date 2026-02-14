@@ -124,7 +124,7 @@
 					entry.sum += answer.value;
 				}
 
-				if (q.type === 'single') {
+				if (q.type === 'single' && typeof answer.value === 'string') {
 					entry.values[answer.value] =
 						(entry.values[answer.value] || 0) + 1;
 				}

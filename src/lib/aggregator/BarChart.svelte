@@ -5,10 +5,13 @@
 	const max = Math.max(...entries.map(([, v]) => v), 1);
 </script>
 
-<div class="space-y-2 max-w-xl">
+<div class="space-y-2 w-full  max-w-4xl ">
 	{#each entries as [label, count]}
 		<div class="flex items-center gap-3">
-			<div class="w-40 text-sm truncate">{label}</div>
+			<div class="min-w-[24rem] max-w-xs text-sm leading-snug break-words">
+				{label}
+			</div>
+
 
 			<!-- Chart rail -->
             <div class="flex-1 bg-slate-200/60 rounded h-2">

@@ -61,13 +61,6 @@
 
 
     const topThemes = [];
-    // const topThemes =
-	// data.keywords
-	// 	? Object.entries(data.keywords)
-	// 			.sort((a, b) => b[1] - a[1])
-	// 			.slice(0, 5)
-	// 	: [];
-
 
 	const q = data.question;
 	const avg =
@@ -111,23 +104,20 @@
 	{/if}
 
 	{#if q.type === 'single' || q.type === 'multi'}
-		<BarChart values={data.values} />
+        <BarChart
+            values={
+                Object.fromEntries(
+                    Object.entries(data.values).map(([id, count]) => [
+                        optionLabelMap[id] ?? id,
+                        count
+                    ])
+                )
+            }
+        />
+
 	{/if}
 
 	{#if data.freeText.length}
-        <!-- {#if topThemes.length}
-            <p class="text-sm text-slate-700">
-                <strong>Top themes:</strong>
-                {#each topThemes as [word, count], i}
-                    <span class="inline-block">
-                        {word}
-                        <span class="text-slate-500">({count})</span
-                        >{i < topThemes.length - 1 ? ', ' : ''}
-                    </span>
-                {/each}
-            </p>
-        {/if} -->
-
 		<details class="mt-2">
             <summary class="cursor-pointer text-sm">
 	            Verbatim responses ({data.freeText.length})
