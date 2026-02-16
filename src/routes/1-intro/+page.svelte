@@ -12,21 +12,33 @@
 		<h1>Lapcat Operational Visibility</h1>
 		<p class="subtitle">
 			This short workshop explores whether Lapcat provides sufficient operational
-			visibility — and whether a lightweight minimum standard would improve resilience.
+			visibility during real incidents — and whether a lightweight minimum
+			standard would improve resilience.
 		</p>
 	</header>
 
 	<div class="card">
 		<h2 class="section-title">Purpose</h2>
 		<ul>
-			<li>Validate current confidence in Lapcat</li>
-			<li>Test a proposed minimum operational baseline</li>
-			<li>Identify practical friction points</li>
-			<li>Explore appetite for assisted governance</li>
+			<li>Validate current confidence in Lapcat during operational pressure</li>
+			<li>Test what information must always be available during incidents</li>
+			<li>Identify practical friction points that prevent records being maintained</li>
+			<li>Explore appetite for lightweight, assisted governance (e.g. flagging gaps)</li>
+		</ul>
+	</div>
+
+	<div class="card">
+		<h2 class="section-title">Important Context</h2>
+		<ul>
+			<li>This is not an audit of individuals.</li>
+			<li>We are testing system resilience, not personal performance.</li>
+			<li>Assume the primary developer may be unavailable.</li>
+			<li>Assume this is a real incident, under time pressure.</li>
 		</ul>
 	</div>
 
 </div>
+
 
 <style>
 	.container {
