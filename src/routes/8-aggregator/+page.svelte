@@ -22,6 +22,7 @@
 	> = {};
 
 	let aggregatedInitiatives: any[] = [];
+	let emergingThemes: string[] = [];
 
 	function handleFiles(event: Event) {
 		const input = event.target as HTMLInputElement;
@@ -44,6 +45,7 @@
 		aiConcernList = [];
 		initiativeMap = {};
 		aggregatedInitiatives = [];
+		emergingThemes = [];
 
 		ratingTotals = {
 			trust: 0,
@@ -132,6 +134,58 @@
 				};
 			})
 			.sort((a, b) => Number(b.score) - Number(a.score));
+
+		// Emerging Themes
+		const topBaseline = topFive(baselineScores)[0];
+		const topFriction = topFive(frictionScores)[0];
+
+		const lowestConfidence = [
+			{ key: 'Trust', value: ratingTotals.trust },
+			{ key: 'Completeness', value: ratingTotals.completeness },
+			{ key: 'Ownership', value: ratingTotals.ownership },
+			{ key: 'Monitoring', value: ratingTotals.monitoring }
+		]
+			.map((r) => ({
+				...r,
+				avg: ratingCount ? r.value / ratingCount : 0
+			}))
+			.sort((a, b) => a.avg - b.avg)[0];
+
+		const dominantAI = Object.entries(aiCounts)
+			.sort((a, b) => b[1] - a[1])[0];
+
+		if (topBaseline)
+			emergingThemes.push(
+				`Strongest baseline consensus: "${topBaseline[0]}"`
+			);
+
+		if (topFriction)
+			emergingThemes.push(
+				`Most significant friction factor: "${topFriction[0]}"`
+			);
+
+		if (lowestConfidence && ratingCount)
+			emergingThemes.push(
+				`Lowest confidence area: ${lowestConfidence.key} (${lowestConfidence.avg.toFixed(
+					2
+				)} / 5)`
+			);
+
+		if (dominantAI) {
+			const percent = (
+				(dominantAI[1] / workshops.length) *
+				100
+			).toFixed(0);
+
+			emergingThemes.push(
+				`AI governance majority position: "${dominantAI[0]}" (${percent}%)`
+			);
+		}
+
+		if (aggregatedInitiatives.length)
+			emergingThemes.push(
+				`Top prioritised initiative: "${aggregatedInitiatives[0].title}"`
+			);
 	}
 
 	function average(v: number) {
@@ -146,17 +200,45 @@
 </script>
 
 <div class="container">
-	<header>
-		<h1>Aggregated Workshop Summary</h1>
-		<input type="file" multiple accept="application/json" on:change={handleFiles} />
-		{#if workshops.length}
-			<p class="muted">{workshops.length} submissions loaded.</p>
-		{/if}
-	</header>
+    <header class="page-header">
+        <div class="header-left">
+            <h1>Aggregated Workshop Summary</h1>
+            <p class="subtitle">
+                Upload workshop JSON files to generate a consolidated view.
+            </p>
+
+            {#if workshops.length}
+                <p class="meta">
+                    {workshops.length} submission{workshops.length === 1 ? '' : 's'} loaded
+                </p>
+            {/if}
+        </div>
+
+        <div class="header-right">
+            <label class="upload">
+                <span>Upload JSON Files</span>
+                <input
+                    type="file"
+                    multiple
+                    accept="application/json"
+                    on:change={handleFiles}
+                />
+            </label>
+        </div>
+    </header>
+
 
 	{#if workshops.length}
 
-		<!-- Current State -->
+		<div class="card highlight">
+			<h2>Emerging Themes</h2>
+			<ul>
+				{#each emergingThemes as theme}
+					<li>{theme}</li>
+				{/each}
+			</ul>
+		</div>
+
 		<div class="card">
 			<h2>Current State Confidence (Average)</h2>
 			<ul>
@@ -167,7 +249,6 @@
 			</ul>
 		</div>
 
-		<!-- Baseline -->
 		<div class="card">
 			<h2>Top 5 Minimum Baseline Fields (Weighted)</h2>
 			<ul>
@@ -177,7 +258,6 @@
 			</ul>
 		</div>
 
-		<!-- Friction -->
 		<div class="card">
 			<h2>Top 5 Friction Factors (Weighted)</h2>
 			<ul>
@@ -187,7 +267,6 @@
 			</ul>
 		</div>
 
-		<!-- Initiatives -->
 		<div class="card">
 			<h2>Initiative Prioritisation (Averaged)</h2>
 			{#each aggregatedInitiatives as item, i}
@@ -203,7 +282,6 @@
 			{/each}
 		</div>
 
-		<!-- AI -->
 		<div class="card">
 			<h2>AI Governance Appetite</h2>
 			<ul>
@@ -228,15 +306,21 @@
 </div>
 
 <style>
+    h2 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        margin: 0 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+
 	.container {
 		max-width: 780px;
 		margin: 4rem auto;
 		padding: 0 1.5rem;
 		font-family: system-ui;
-	}
-
-	header {
-		margin-bottom: 2rem;
 	}
 
 	.card {
@@ -247,15 +331,9 @@
 		margin-bottom: 1.5rem;
 	}
 
-	h2 {
-		font-size: 1rem;
-		margin-bottom: 1rem;
-	}
-
-	h3 {
-		font-size: 0.9rem;
-		margin-top: 1rem;
-		margin-bottom: 0.5rem;
+	.highlight {
+		border-left: 4px solid #111;
+		background: #fafafa;
 	}
 
 	.rank-item {
@@ -292,4 +370,71 @@
 		padding: 0.9rem;
 		border-radius: 8px;
 	}
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .header-left {
+        flex: 1;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin: 0 0 0.4rem 0;
+    }
+
+    .subtitle {
+        font-size: 0.95rem;
+        color: #666;
+        margin: 0 0 0.75rem 0;
+    }
+
+    .meta {
+        font-size: 0.85rem;
+        color: #777;
+        background: #f3f3f3;
+        display: inline-block;
+        padding: 0.35rem 0.6rem;
+        border-radius: 6px;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Styled upload button */
+    .upload {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #111;
+        color: white;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: opacity 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload:hover {
+        opacity: 0.85;
+    }
+
+    .upload input {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
 </style>

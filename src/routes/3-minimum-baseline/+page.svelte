@@ -24,7 +24,6 @@
 	let dragIndex: number | null = null;
 	let draggingIndex: number | null = null;
 
-    $: persist(fields);
 
     function persist(currentFields: typeof fields) {
         const existing = localStorage.getItem('lapcat-workshop');
@@ -39,32 +38,54 @@
         );
     }
 
+    function shuffle<T>(array: T[]): T[] {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
 
-	onMount(() => {
-		const existing = localStorage.getItem('lapcat-workshop');
-		if (existing) {
-			const parsed = JSON.parse(existing);
-			if (parsed.minimumFieldOrder) {
-				fields = parsed.minimumFieldOrder;
-			}
+
+onMount(() => {
+	const existing = localStorage.getItem('lapcat-workshop');
+
+	if (existing) {
+		const parsed = JSON.parse(existing);
+
+		if (parsed.minimumFieldOrder) {
+			fields = parsed.minimumFieldOrder;
+			return;
 		}
-	});
-
-	function moveUp(index: number) {
-		if (index === 0) return;
-		const updated = [...fields];
-		[updated[index - 1], updated[index]] =
-			[updated[index], updated[index - 1]];
-		fields = updated;
 	}
 
-	function moveDown(index: number) {
-		if (index === fields.length - 1) return;
-		const updated = [...fields];
-		[updated[index + 1], updated[index]] =
-			[updated[index], updated[index + 1]];
-		fields = updated;
-	}
+	fields = shuffle(fields);
+	persist(fields);
+});
+
+
+
+
+function moveUp(index: number) {
+	if (index === 0) return;
+	const updated = [...fields];
+	[updated[index - 1], updated[index]] =
+		[updated[index], updated[index - 1]];
+	fields = updated;
+	persist(fields);
+}
+
+
+function moveDown(index: number) {
+	if (index === fields.length - 1) return;
+	const updated = [...fields];
+	[updated[index + 1], updated[index]] =
+		[updated[index], updated[index + 1]];
+	fields = updated;
+	persist(fields);
+}
+
 
 	function handleDragStart(event: DragEvent, index: number) {
 		dragIndex = index;
@@ -79,17 +100,20 @@
 		draggingIndex = null;
 	}
 
-	function handleDrop(index: number) {
-		if (dragIndex === null || dragIndex === index) return;
+    function handleDrop(index: number) {
+        if (dragIndex === null || dragIndex === index) return;
 
-		const updated = [...fields];
-		const [moved] = updated.splice(dragIndex, 1);
-		updated.splice(index, 0, moved);
+        const updated = [...fields];
+        const [moved] = updated.splice(dragIndex, 1);
+        updated.splice(index, 0, moved);
 
-		fields = updated;
-		dragIndex = null;
-		draggingIndex = null;
-	}
+        fields = updated;
+        dragIndex = null;
+        draggingIndex = null;
+
+        persist(fields);
+    }
+
 
 	function saveAndContinue() {
 		const existing = localStorage.getItem('lapcat-workshop');

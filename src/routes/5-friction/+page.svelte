@@ -19,56 +19,85 @@
 		{ id: 'tooling', label: 'Tooling Limitations', description: 'Interface/process friction.' }
 	];
 
-let hydrated = false;
-
-onMount(() => {
-	const existing = localStorage.getItem('lapcat-workshop');
-	if (existing) {
-		const parsed = JSON.parse(existing);
-		if (parsed.frictionOrder) {
-			frictionItems = parsed.frictionOrder;
-		}
-	}
-	hydrated = true;
-});
-
-// Persist only after hydration
-$: if (hydrated) {
-	persist(frictionItems);
-}
-
-function persist(items: typeof frictionItems) {
-	const existing = localStorage.getItem('lapcat-workshop');
-	const parsed = existing ? JSON.parse(existing) : {};
-
-	localStorage.setItem(
-		'lapcat-workshop',
-		JSON.stringify({
-			...parsed,
-			frictionOrder: items
-		})
-	);
-}
-
-
 	let dragIndex: number | null = null;
 	let draggingIndex: number | null = null;
 
+	/* ---------------------------------------
+	   Shuffle (Fisher–Yates)
+	---------------------------------------- */
+
+	function shuffle<T>(array: T[]): T[] {
+		const arr = [...array];
+		for (let i = arr.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[arr[i], arr[j]] = [arr[j], arr[i]];
+		}
+		return arr;
+	}
+
+	/* ---------------------------------------
+	   Persistence
+	---------------------------------------- */
+
+	function persist(items: FrictionItem[]) {
+		const existing = localStorage.getItem('lapcat-workshop');
+		const parsed = existing ? JSON.parse(existing) : {};
+
+		localStorage.setItem(
+			'lapcat-workshop',
+			JSON.stringify({
+				...parsed,
+				frictionOrder: items
+			})
+		);
+	}
+
+	/* ---------------------------------------
+	   Initialisation
+	---------------------------------------- */
+
+	onMount(() => {
+		const existing = localStorage.getItem('lapcat-workshop');
+
+		if (existing) {
+			const parsed = JSON.parse(existing);
+
+			// If saved order exists, use it
+			if (parsed.frictionOrder) {
+				frictionItems = parsed.frictionOrder;
+				return;
+			}
+		}
+
+		// Otherwise randomise initial order
+		frictionItems = shuffle(frictionItems);
+		persist(frictionItems);
+	});
+
+	/* ---------------------------------------
+	   Reordering
+	---------------------------------------- */
 
 	function moveUp(index: number) {
 		if (index === 0) return;
+
 		const updated = [...frictionItems];
 		[updated[index - 1], updated[index]] =
 			[updated[index], updated[index - 1]];
+
 		frictionItems = updated;
+		persist(frictionItems);
 	}
 
 	function moveDown(index: number) {
 		if (index === frictionItems.length - 1) return;
+
 		const updated = [...frictionItems];
 		[updated[index + 1], updated[index]] =
 			[updated[index], updated[index + 1]];
+
 		frictionItems = updated;
+		persist(frictionItems);
 	}
 
 	function handleDragStart(event: DragEvent, index: number) {
@@ -94,20 +123,12 @@ function persist(items: typeof frictionItems) {
 		frictionItems = updated;
 		dragIndex = null;
 		draggingIndex = null;
+
+		persist(frictionItems);
 	}
 
 	function saveAndContinue() {
-		const existing = localStorage.getItem('lapcat-workshop');
-		const parsed = existing ? JSON.parse(existing) : {};
-
-		localStorage.setItem(
-			'lapcat-workshop',
-			JSON.stringify({
-				...parsed,
-				frictionOrder: frictionItems
-			})
-		);
-
+		persist(frictionItems);
 		goto('/5-lifecycle');
 	}
 </script>
@@ -151,7 +172,6 @@ function persist(items: typeof frictionItems) {
 			</div>
 		{/each}
 	</div>
-
 </div>
 
 <style>
@@ -159,8 +179,7 @@ function persist(items: typeof frictionItems) {
 		max-width: 780px;
 		margin: 4rem auto;
 		padding: 0 1.5rem;
-		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-			sans-serif;
+		font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 		color: #222;
 	}
 
@@ -270,25 +289,5 @@ function persist(items: typeof frictionItems) {
 
 	.controls button:hover {
 		background: #ddd;
-	}
-
-	.actions {
-		margin-top: 2rem;
-		text-align: right;
-	}
-
-	.next {
-		padding: 0.6rem 1.4rem;
-		border-radius: 8px;
-		border: none;
-		background: #111;
-		color: white;
-		font-size: 0.9rem;
-		cursor: pointer;
-		transition: opacity 0.2s ease;
-	}
-
-	.next:hover {
-		opacity: 0.85;
 	}
 </style>
