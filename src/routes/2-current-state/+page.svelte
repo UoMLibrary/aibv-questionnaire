@@ -15,6 +15,22 @@
 		monitoring: null
 	};
 
+    $: persist(responses);
+
+    function persist(state: typeof responses) {
+        const existing = localStorage.getItem('lapcat-workshop');
+        const parsed = existing ? JSON.parse(existing) : {};
+
+        localStorage.setItem(
+            'lapcat-workshop',
+            JSON.stringify({
+                ...parsed,
+                currentState: state
+            })
+        );
+    }
+
+
 	onMount(() => {
 		const existing = localStorage.getItem('lapcat-workshop');
 		if (existing) {

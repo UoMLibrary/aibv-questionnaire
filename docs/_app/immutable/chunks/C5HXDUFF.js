@@ -1,0 +1,1 @@
+import{B as l}from"./CiiSKS_t.js";function u(r){return function(...t){var e=t[0];return e.preventDefault(),r?.apply(this,t)}}function v(r,t){var e=r.$$events?.[t.type],a=l(e)?e.slice():e==null?[]:[e];for(var n of a)n.call(this,t)}export{v as b,u as p};
