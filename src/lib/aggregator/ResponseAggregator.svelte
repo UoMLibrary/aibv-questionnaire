@@ -195,7 +195,7 @@
 		// Text themes
 		if (data.keywords && Object.keys(data.keywords).length > 0) {
 			const topThemes = Object.entries(data.keywords)
-				.sort((a, b) => b[1] - a[1])
+				.sort((a, b) => (b[1] as number) - (a[1] as number))
 				.slice(0, 5);
 
 			md += `**Top themes:**\n\n`;
