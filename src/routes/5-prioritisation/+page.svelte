@@ -16,8 +16,8 @@
 			title: 'Standardised Documentation Template',
 			description:
 				'Create a consistent template for documenting library software systems.',
-			impact: 4,
-			effort: 2,
+			impact: 1,
+			effort: 1,
 			risk: 1
 		},
 		{
@@ -25,18 +25,18 @@
 			title: 'Monitoring Dashboard',
 			description:
 				'Central dashboard showing service health, dependencies, and system status.',
-			impact: 5,
-			effort: 4,
-			risk: 3
+			impact: 1,
+			effort: 1,
+			risk: 1
 		},
 		{
 			id: crypto.randomUUID(),
 			title: 'AI Log Analysis',
 			description:
 				'Use AI to analyse logs and detect anomalies or missing documentation.',
-			impact: 4,
-			effort: 5,
-			risk: 4
+			impact: 1,
+			effort: 1,
+			risk: 1
 		}
 	];
 
