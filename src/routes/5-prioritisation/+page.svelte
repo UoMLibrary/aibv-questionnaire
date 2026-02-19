@@ -94,7 +94,7 @@
 
 <div class="container">
 	<header>
-		<p class="step">Step 4 of 7</p>
+		<p class="step">Step 5 of 7</p>
 		<h1>Prioritisation</h1>
 		<p class="subtitle">
 			Score each initiative based on impact, effort, and risk.

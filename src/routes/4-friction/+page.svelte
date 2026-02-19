@@ -135,7 +135,7 @@
 
 <div class="container">
 	<header>
-		<p class="step">Step 5 of 7</p>
+		<p class="step">Step 4 of 7</p>
 		<h1>Friction Prioritisation</h1>
 		<p class="subtitle">
 			Rank the factors that most realistically prevent Lapcat records being updated.
